@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced To-Do List App</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --text-primary: #ffffff;
+      --completed-color: #9e9e9e;
+      --success-color: #4caf50;
+      --container-bg: rgba(255, 255, 255, 0.1);
+      --container-shadow: rgba(0, 0, 0, 0.3);
+    }
+
+    [data-theme="light"] {
+      --bg-primary: #ffffff;
+      --text-primary: #333333;
+      --completed-color: #9e9e9e;
+      --success-color: #4caf50;
+      --container-bg: rgba(255, 255, 255, 0.95);
+      --container-shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      transition: color 0.3s;
+      overflow-x: hidden;
+    }
+
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .star {
+      position: absolute;
+      background-color: #fff;
+      border-radius: 50%;
+      opacity: 0;
+      animation: twinkle 5s infinite;
+    }
+
+    .gradient-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, rgba(32, 41, 77, 0.4) 0%, rgba(15, 23, 42, 0.95) 100%);
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.8; }
+    }
+
+    .background-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .floating-shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      opacity: 0.6;
+    }
+
+    .shape1 {
+      width: 300px;
+      height: 300px;
+      background: var(--shape-color);
+      top: 10%;
+      left: -100px;
+      animation: float1 20s infinite ease-in-out;
+    }
+
+    .shape2 {
+      width: 400px;
+      height: 400px;
+      background: var(--shape-color-2);
+      bottom: -150px;
+      right: -100px;
+      animation: float2 25s infinite ease-in-out;
+    }
+
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(50px, 50px) rotate(5deg); }
+      50% { transform: translate(100px, -30px) rotate(-5deg); }
+      75% { transform: translate(30px, -50px) rotate(3deg); }
+    }
+
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(-50px, -30px) rotate(-5deg); }
+      50% { transform: translate(-70px, 50px) rotate(5deg); }
+      75% { transform: translate(-30px, 30px) rotate(-3deg); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: var(--container-bg);
+      border-radius: 16px;
+      box-shadow: 0 8px 30px var(--container-shadow);
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .task-list li {
+      animation: slideIn 0.3s ease-out forwards;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .task-content {
+      flex-grow: 1;
+      margin: 0 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .task-btn {
+      background: none;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      color: var(--text-primary);
+      opacity: 0.7;
+      transition: all 0.2s ease;
+      border-radius: 4px;
+    }
+
+    .task-btn:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .done-btn {
+      color: var(--success-color);
+    }
+
+    .task-item.completed .task-content {
+      text-decoration: line-through;
+      color: var(--completed-color);
+    }
+
+    .task-item.completed .done-btn {
+      background: var(--success-color);
+      color: white;
+      opacity: 1;
+    }
+
+    @keyframes taskComplete {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+
+    .task-item.completing {
+      animation: taskComplete 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .container { margin: 1rem; padding: 1rem; }
+      .floating-shape { opacity: 0.4; }
+      .task-actions { gap: 0.25rem; }
+      .task-btn { padding: 0.4rem; }
+    }
+  </style>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <div class="background">
+    <div class="stars" id="stars"></div>
+    <div class="gradient-overlay"></div>
+  </div>
+  <div class="container">
+    <div class="header">
+      <h1>To-Do List</h1>
+      <div class="theme-toggle">
+        <label class="switch">
+          <input type="checkbox" id="themeToggle">
+          <span class="slider round"></span>
+        </label>
+        <span class="theme-label">Dark Mode</span>
+      </div>
+    </div>
+    
+    <div class="task-input-container">
+      <input type="text" id="taskInput" placeholder="Add a new task...">
+      <button onclick="addTask()" class="add-btn">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">
+        <i class="fas fa-list"></i>
+        <span>All</span>
+      </button>
+      <button class="filter-btn" data-filter="active">
+        <i class="fas fa-clock"></i>
+        <span>Active</span>
+      </button>
+      <button class="filter-btn" data-filter="completed">
+        <i class="fas fa-check-circle"></i>
+        <span>Completed</span>
+      </button>
+    </div>
+
+    <div class="task-stats">
+      <span id="taskCount">0 tasks remaining</span>
+      <button class="clear-btn" onclick="clearCompleted()">
+        <i class="fas fa-trash"></i>
+        <span>Clear Completed</span>
+      </button>
+    </div>
+
+    <ul id="taskList" class="task-list"></ul>
+  </div>
+
+  <script>
+    // Task management
+    let tasks = [];
+    const taskInput = document.getElementById('taskInput');
+    const taskList = document.getElementById('taskList');
+    const taskCount = document.getElementById('taskCount');
+    let currentFilter = 'all';
+
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('change', () => {
+      document.body.setAttribute('data-theme', themeToggle.checked ? 'dark' : 'light');
+    });
+
+    // Add new task
+    function addTask() {
+      const text = taskInput.value.trim();
+      if (text) {
+        const task = {
+          id: Date.now(),
+          text,
+          completed: false
+        };
+        tasks.push(task);
+        taskInput.value = '';
+        renderTasks();
+      }
+    }
+
+    // Toggle task completion
+    function toggleTask(id) {
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.completed = !task.completed;
+        const taskElement = document.querySelector(`[data-task-id="${id}"]`);
+        if (taskElement) {
+          taskElement.classList.add('completing');
+          setTimeout(() => taskElement.classList.remove('completing'), 300);
+        }
+        renderTasks();
+      }
+    }
+
+    // Delete task
+    function deleteTask(id) {
+      tasks = tasks.filter(task => task.id !== id);
+      renderTasks();
+    }
+
+    // Clear completed tasks
+    function clearCompleted() {
+      tasks = tasks.filter(task => !task.completed);
+      renderTasks();
+    }
+
+    // Filter tasks
+    function filterTasks(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+      });
+      renderTasks();
+    }
+
+    // Render tasks
+    function renderTasks() {
+      const filteredTasks = tasks.filter(task => {
+        if (currentFilter === 'active') return !task.completed;
+        if (currentFilter === 'completed') return task.completed;
+        return true;
+      });
+
+      taskList.innerHTML = filteredTasks.map(task => `
+        <li class="task-item ${task.completed ? 'completed' : ''}" data-task-id="${task.id}">
+          <button class="task-btn done-btn" onclick="toggleTask(${task.id})">
+            <i class="fas ${task.completed ? 'fa-check-circle' : 'fa-circle'}"></i>
+          </button>
+          <span class="task-content">${task.text}</span>
+          <div class="task-actions">
+            <button class="task-btn delete-btn" onclick="deleteTask(${task.id})">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </li>
+      `).join('');
+
+      const remainingTasks = tasks.filter(task => !task.completed).length;
+      taskCount.textContent = `${remainingTasks} task${remainingTasks !== 1 ? 's' : ''} remaining`;
+    }
+
+    // Event listeners
+    taskInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') addTask();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => filterTasks(btn.dataset.filter));
+    });
+
+    // Create twinkling stars
+    const createStars = () => {
+      const starsContainer = document.getElementById('stars');
+      const starCount = 150;
+      
+      for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        // Random size between 1px and 3px
+        const size = Math.random() * 2 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        
+        // Random position
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        star.style.left = `${left}%`;
+        star.style.top = `${top}%`;
+        
+        // Random animation delay
+        star.style.animationDelay = `${Math.random() * 5}s`;
+        
+        starsContainer.appendChild(star);
+      }
+    };
+
+    // Initialize stars and tasks
+    document.addEventListener('DOMContentLoaded', () => {
+      createStars();
+      renderTasks();
+    });
+  </script>
+</body>
+</html> 
