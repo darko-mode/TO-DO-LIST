@@ -14,7 +14,7 @@ A clean and modern To-Do List web app built with **HTML**, **CSS**, and **JavaSc
 
 ## 🖼️ Preview
 
-![App Preview](![image](https://ibb.co/Kpz7kRVr) <!-- Replace with actual image path if needed -->
+![App Preview](https://imgur.com/a/YrbNHCs) <!-- Replace with actual image path if needed -->
 
 ## 💻 Technologies Used
 
